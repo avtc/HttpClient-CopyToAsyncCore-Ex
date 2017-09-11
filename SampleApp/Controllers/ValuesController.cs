@@ -39,31 +39,31 @@ namespace SampleApp.Controllers
         [Route("post")]
         public async Task<string> PostToPostAsync([FromBody]string url)
         {
-            using (var client = new HttpClient())
+            try
             {
-                client.DefaultRequestHeaders.Connection.Clear();
-                client.DefaultRequestHeaders.ConnectionClose = true;
+                using (var client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.Connection.Clear();
+                    client.DefaultRequestHeaders.ConnectionClose = true;
 
-                using (var request = new HttpRequestMessage(HttpMethod.Post, url)
-                {
-                    Content = new StringContent(url, Encoding.UTF8, "application/json")
-                })
-                {
-                    using (var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead, CancellationToken.None).ConfigureAwait(false))
+                    using (var request = new HttpRequestMessage(HttpMethod.Post, url)
                     {
-                        try
+                        Content = new StringContent(url, Encoding.UTF8, "application/json")
+                    })
+                    {
+                        using (var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead, CancellationToken.None).ConfigureAwait(false))
                         {
-                            var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            _logger.LogWarning($"OK: {url}");
-                            return result;
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(new EventId(ex.HResult), ex, ex.Message);
-                            return "Ex: " + ex.ToString();
+                                var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                                _logger.LogWarning($"OK: {url}");
+                                return result;
                         }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(new EventId(ex.HResult), ex, ex.Message);
+                return "Ex: " + ex.ToString();
             }
         }
 
@@ -72,20 +72,20 @@ namespace SampleApp.Controllers
         [Route("runpost")]
         public string PostToRunPostAsync([FromBody]string url)
         {
-            var t = Task.Run(async() =>
+            var t = Task.Run(async () =>
             {
-                using (var client = new HttpClient())
+                try
                 {
-                    client.DefaultRequestHeaders.Connection.Clear();
-                    client.DefaultRequestHeaders.ConnectionClose = true;
-
-                    var request = new HttpRequestMessage(HttpMethod.Post, url)
+                    using (var client = new HttpClient())
                     {
-                        Content = new StringContent(url, Encoding.UTF8, "application/json")
-                    };
+                        client.DefaultRequestHeaders.Connection.Clear();
+                        client.DefaultRequestHeaders.ConnectionClose = true;
 
-                    try
-                    {
+                        var request = new HttpRequestMessage(HttpMethod.Post, url)
+                        {
+                            Content = new StringContent(url, Encoding.UTF8, "application/json")
+                        };
+
                         using (var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead, CancellationToken.None).ConfigureAwait(false))
                         {
                             var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -93,11 +93,11 @@ namespace SampleApp.Controllers
                             return result;
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(new EventId(ex.HResult), ex, ex.Message);
-                        return "Ex: " + ex.ToString();
-                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(new EventId(ex.HResult), ex, ex.Message);
+                    return "Ex: " + ex.ToString();
                 }
             });
             return "accepted";
@@ -108,25 +108,56 @@ namespace SampleApp.Controllers
         [Route("get")]
         public async Task<string> PostToGetAsync([FromBody]string url)
         {
-            using (var client = new HttpClient())
+            try
             {
-                client.DefaultRequestHeaders.Connection.Clear();
-                client.DefaultRequestHeaders.ConnectionClose = true;
-                using (var response = await client.GetAsync(url).ConfigureAwait(false))
+                using (var client = new HttpClient())
                 {
-                    try
+                    client.DefaultRequestHeaders.Connection.Clear();
+                    client.DefaultRequestHeaders.ConnectionClose = true;
+                    using (var response = await client.GetAsync(url).ConfigureAwait(false))
                     {
-                        var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                        _logger.LogWarning($"OK: {url}");
-                        return result;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(new EventId(ex.HResult), ex, ex.Message);
-                        return "Ex: " + ex.ToString();
+                            var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            _logger.LogWarning($"OK: {url}");
+                            return result;
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(new EventId(ex.HResult), ex, ex.Message);
+                return "Ex: " + ex.ToString();
+            }
         }
+
+        // POST api/values/get
+        [HttpPost]
+        [Route("runget")]
+        public string PostToRunGetAsync([FromBody]string url)
+        {
+            var t = Task.Run(async () =>
+            {
+                try
+                {
+                    using (var client = new HttpClient())
+                    {
+                        client.DefaultRequestHeaders.Connection.Clear();
+                        client.DefaultRequestHeaders.ConnectionClose = true;
+                        using (var response = await client.GetAsync(url).ConfigureAwait(false))
+                        {
+                                var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                                _logger.LogWarning($"OK: {url}");
+                                return result;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(new EventId(ex.HResult), ex, ex.Message);
+                    return "Ex: " + ex.ToString();
+                }
+            });
+            return "accepted";
+        }
+
     }
 }

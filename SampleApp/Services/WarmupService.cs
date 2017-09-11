@@ -33,7 +33,6 @@ namespace SampleApp.Services
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Connection.Clear();
-                //client.DefaultRequestHeaders.ConnectionClose = true;
                 client.DefaultRequestHeaders.ConnectionClose = false;
                 client.DefaultRequestHeaders.Connection.Add("keep-alive");
 
