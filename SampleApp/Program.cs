@@ -7,6 +7,7 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Server.HttpSys;
 
 namespace SampleApp
 {
@@ -20,6 +21,12 @@ namespace SampleApp
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
+                //.UseHttpSys(options =>
+                //{
+                //    options.Authentication.Schemes = AuthenticationSchemes.None;
+                //    options.Authentication.AllowAnonymous = true;
+                //    options.UrlPrefixes.Add("http://localhost:50614/");
+                //})
                 .Build();
     }
 }

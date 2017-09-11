@@ -53,16 +53,16 @@ namespace SampleApp.Controllers
                     {
                         using (var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead, CancellationToken.None).ConfigureAwait(false))
                         {
-                                var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                                _logger.LogWarning($"OK: {url}");
-                                return result;
+                            var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            _logger.LogTrace($"OK: {url}");
+                            return result;
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(new EventId(ex.HResult), ex, ex.Message);
+                _logger.LogError(new EventId(ex.HResult), ex, $"FAIL: {url}, {ex.Message}");
                 return "Ex: " + ex.ToString();
             }
         }
@@ -89,14 +89,14 @@ namespace SampleApp.Controllers
                         using (var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead, CancellationToken.None).ConfigureAwait(false))
                         {
                             var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            _logger.LogWarning($"OK: {url}");
+                            _logger.LogTrace($"OK: {url}");
                             return result;
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(new EventId(ex.HResult), ex, ex.Message);
+                    _logger.LogError(new EventId(ex.HResult), ex, $"FAIL: {url}, {ex.Message}");
                     return "Ex: " + ex.ToString();
                 }
             });
@@ -116,15 +116,15 @@ namespace SampleApp.Controllers
                     client.DefaultRequestHeaders.ConnectionClose = true;
                     using (var response = await client.GetAsync(url).ConfigureAwait(false))
                     {
-                            var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            _logger.LogWarning($"OK: {url}");
-                            return result;
+                        var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        _logger.LogTrace($"OK: {url}");
+                        return result;
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(new EventId(ex.HResult), ex, ex.Message);
+                _logger.LogError(new EventId(ex.HResult), ex, $"FAIL: {url}, {ex.Message}");
                 return "Ex: " + ex.ToString();
             }
         }
@@ -144,15 +144,15 @@ namespace SampleApp.Controllers
                         client.DefaultRequestHeaders.ConnectionClose = true;
                         using (var response = await client.GetAsync(url).ConfigureAwait(false))
                         {
-                                var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                                _logger.LogWarning($"OK: {url}");
-                                return result;
+                            var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            _logger.LogTrace($"OK: {url}");
+                            return result;
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(new EventId(ex.HResult), ex, ex.Message);
+                    _logger.LogError(new EventId(ex.HResult), ex, $"FAIL: {url}, {ex.Message}");
                     return "Ex: " + ex.ToString();
                 }
             });
