@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 
 namespace SampleApp.Services
 {
@@ -18,9 +19,7 @@ namespace SampleApp.Services
 
         public async Task WarmupAsync()
         {
-            const int cnt = 500;
-            const int payloadLength = 1000;
-            var payload = new string('B', payloadLength);
+            const int cnt = 10_000;
 
             Console.WriteLine("Warmup...");
             Stopwatch sw = new Stopwatch();
@@ -34,26 +33,24 @@ namespace SampleApp.Services
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Connection.Clear();
-                client.DefaultRequestHeaders.ConnectionClose = true;
-                //client.DefaultRequestHeaders.Connection.Add("keep-alive");
-                //client.DefaultRequestHeaders.ConnectionClose = false;
-                //client.DefaultRequestHeaders.Connection.Add("keep-alive");
+                //client.DefaultRequestHeaders.ConnectionClose = true;
+                client.DefaultRequestHeaders.ConnectionClose = false;
+                client.DefaultRequestHeaders.Connection.Add("keep-alive");
 
                 // call endpoints
                 for (int i = 0; i < cnt; i++)
                 {
                     try
                     {
-                        var fakeurl = $"{url}/api/values/fake/{payloadLength}";
-                        using (var response = await client.PostAsync(
-                            $"{url}/api/values/runpost",
-                            new StringContent("\"" + fakeurl + "\"", Encoding.UTF8, "application/json")).ConfigureAwait(false))
+                        var fakeurl = $"{url}/api/values/fake/{i}";
+                        using (var request = new HttpRequestMessage(HttpMethod.Post, $"{url}/api/values/runpost")
                         {
-                            var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            if (result.StartsWith("Ex: "))
+                            Content = new StringContent("\"" + fakeurl + "\"", Encoding.UTF8, "application/json")
+                        })
+                        {
+                            using (var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead, CancellationToken.None).ConfigureAwait(false))
                             {
-                                Console.WriteLine(result);
-                                break;
+                                var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                             }
                         }
                     }

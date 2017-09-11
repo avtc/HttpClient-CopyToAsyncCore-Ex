@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Text;
 using System;
 using Microsoft.Extensions.Logging;
+using System.Threading;
 
 namespace SampleApp.Controllers
 {
@@ -27,11 +28,10 @@ namespace SampleApp.Controllers
         // GET api/values/fake/0
         [HttpGet]
         [HttpPost]
-        [Route("fake/{length:int}")]
-        public async Task<string> GetFake(int length)
+        [Route("fake/{n:int}")]
+        public string GetFake(int n)
         {
-            await Task.Delay(100);
-            return new string('A', length);
+            return $"fake-{n}";
         }
 
         // POST api/values
@@ -43,19 +43,25 @@ namespace SampleApp.Controllers
             {
                 client.DefaultRequestHeaders.Connection.Clear();
                 client.DefaultRequestHeaders.ConnectionClose = true;
-                using (var response = await client.PostAsync(
-                    url, 
-                    new StringContent(url, Encoding.UTF8, "application/json")).ConfigureAwait(false))
+
+                using (var request = new HttpRequestMessage(HttpMethod.Post, url)
                 {
-                    try
+                    Content = new StringContent(url, Encoding.UTF8, "application/json")
+                })
+                {
+                    using (var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead, CancellationToken.None).ConfigureAwait(false))
                     {
-                        var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                        return result;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(new EventId(ex.HResult), ex, ex.Message);
-                        return "Ex: " + ex.ToString();
+                        try
+                        {
+                            var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            _logger.LogWarning($"OK: {url}");
+                            return result;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(new EventId(ex.HResult), ex, ex.Message);
+                            return "Ex: " + ex.ToString();
+                        }
                     }
                 }
             }
@@ -72,20 +78,25 @@ namespace SampleApp.Controllers
                 {
                     client.DefaultRequestHeaders.Connection.Clear();
                     client.DefaultRequestHeaders.ConnectionClose = true;
-                    using (var response = await client.PostAsync(
-                        url,
-                        new StringContent(url, Encoding.UTF8, "application/json")).ConfigureAwait(false))
+
+                    var request = new HttpRequestMessage(HttpMethod.Post, url)
                     {
-                        try
+                        Content = new StringContent(url, Encoding.UTF8, "application/json")
+                    };
+
+                    try
+                    {
+                        using (var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead, CancellationToken.None).ConfigureAwait(false))
                         {
                             var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            _logger.LogWarning($"OK: {url}");
                             return result;
                         }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(new EventId(ex.HResult), ex, ex.Message);
-                            return "Ex: " + ex.ToString();
-                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(new EventId(ex.HResult), ex, ex.Message);
+                        return "Ex: " + ex.ToString();
                     }
                 }
             });
@@ -106,6 +117,7 @@ namespace SampleApp.Controllers
                     try
                     {
                         var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        _logger.LogWarning($"OK: {url}");
                         return result;
                     }
                     catch (Exception ex)
