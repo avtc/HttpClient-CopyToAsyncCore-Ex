@@ -39,26 +39,21 @@ namespace ConsoleApp
                     client.DefaultRequestHeaders.Connection.Clear();
                     client.DefaultRequestHeaders.ConnectionClose = true;
 
-                    using (var request = new HttpRequestMessage(HttpMethod.Post, url)
+                    try
                     {
-                        Content = new StringContent(url, Encoding.UTF8, "application/json")
-                    })
+                        using (var response = await client.PostAsync(url, new StringContent(url, Encoding.UTF8, "application/json"), CancellationToken.None).ConfigureAwait(false))
+                        {
+                            var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            await writer.WriteLineAsync($"OK: {i}").ConfigureAwait(false);
+                        }
+                    }
+                    catch (Exception ex)
                     {
-                        try
-                        {
-                            using (var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead, CancellationToken.None).ConfigureAwait(false))
-                            {
-                                var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                                await writer.WriteLineAsync($"OK: {i}").ConfigureAwait(false);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            await writer.WriteLineAsync($"FAIL: {i}. EX: {ex}").ConfigureAwait(false);
-                        }
+                        await writer.WriteLineAsync($"FAIL: {i}. EX: {ex}").ConfigureAwait(false);
                     }
                 }
             });
         }
+
     }
 }
