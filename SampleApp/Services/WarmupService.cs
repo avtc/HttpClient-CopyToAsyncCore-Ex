@@ -19,7 +19,7 @@ namespace SampleApp.Services
 
         public async Task WarmupAsync()
         {
-            const int cnt = 10_000;
+            const int cnt = 1_000;
 
             Console.WriteLine("Warmup...");
             Stopwatch sw = new Stopwatch();
